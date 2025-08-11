@@ -109,7 +109,9 @@ class RLWalk:
         if self.commands:
             self.xbox_controller = XBoxController(self.command_freq)
 
-        self.PRM = PolyReferenceMotion("./polynomial_coefficients.pkl")
+        # 使用与当前文件同目录下的系数文件，避免相对工作目录导致找不到文件
+        coeff_path = os.path.join(os.path.dirname(__file__), "polynomial_coefficients.pkl")
+        self.PRM = PolyReferenceMotion(coeff_path)
         self.imitation_i = 0
         self.imitation_phase = np.array([0, 0])
         self.phase_frequency_factor = 1.0
@@ -120,7 +122,8 @@ class RLWalk:
         if self.duck_config.projector:
             self.projector = Projector()
         if self.duck_config.speaker:
-            self.sounds = Sounds(volume=1.0, sound_directory="../mini_bdx_runtime/assets/")
+            src_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+            self.sounds = Sounds(volume=1.0, sound_directory=f"{src_root}/src/robot/mini_bdx_runtime/assets/")
         if self.duck_config.antennas:
             self.antennas = Antennas()
 
