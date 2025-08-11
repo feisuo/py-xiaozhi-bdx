@@ -132,12 +132,12 @@ class Application:
         mode = kwargs.get("mode", "gui")
         protocol = kwargs.get("protocol", "websocket")
 
-        if mode == "gui":
-            # GUI模式：需要创建Qt应用和qasync事件循环
-            return await self._run_gui_mode(protocol)
-        else:
+        # if mode == "gui":
+        #     # GUI模式：需要创建Qt应用和qasync事件循环
+        #     return await self._run_gui_mode(protocol)
+        # else:
             # CLI模式：使用标准asyncio
-            return await self._run_cli_mode(protocol)
+        return await self._run_cli_mode(protocol)
 
     # async def _run_gui_mode(self, protocol: str):
         """
