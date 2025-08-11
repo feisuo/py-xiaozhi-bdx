@@ -56,8 +56,8 @@ class ConfigManager:
         "ROBOT": {
             "RLWALK": {
                 "ENABLED": True,
-                "ONNX_MODEL_PATH": None,
-                "DUCK_CONFIG_PATH": None,
+                "ONNX_MODEL_PATH": "/home/feisuo/BEST_WALK_ONNX_2.onnx",
+                "DUCK_CONFIG_PATH": "/home/feisuo/duck_config.json",
                 "CONTROL_FREQ": 50,
                 "ACTION_SCALE": 0.25,
                 "PID": {"P": 30, "I": 0, "D": 0},
