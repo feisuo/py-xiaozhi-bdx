@@ -139,7 +139,7 @@ class Application:
             # CLI模式：使用标准asyncio
             return await self._run_cli_mode(protocol)
 
-    async def _run_gui_mode(self, protocol: str):
+    # async def _run_gui_mode(self, protocol: str):
         """
         在GUI模式下运行应用程序.
         """
@@ -150,55 +150,55 @@ class Application:
         #     logger.error("GUI模式需要qasync和PyQt5库，请安装: pip install qasync PyQt5")
         #     return 1
 
-        try:
+        # try:
             # 检查是否已存在QApplication实例
-            app = QApplication.instance()
-            if app is None:
-                logger.info("创建新的QApplication实例")
-                app = QApplication(sys.argv)
-            else:
-                logger.info("使用已存在的QApplication实例")
+            # app = QApplication.instance()
+            # if app is None:
+            #     logger.info("创建新的QApplication实例")
+            #     app = QApplication(sys.argv)
+            # else:
+            #     logger.info("使用已存在的QApplication实例")
 
-            # 确保清理之前的事件循环
-            try:
-                current_loop = asyncio.get_event_loop()
-                if current_loop and not current_loop.is_closed():
-                    logger.debug("发现现有事件循环，准备关闭")
-                    # 不强制关闭，让它自然完成
-            except RuntimeError:
-                # 没有现有循环，这是正常的
-                pass
+            # # 确保清理之前的事件循环
+            # try:
+            #     current_loop = asyncio.get_event_loop()
+            #     if current_loop and not current_loop.is_closed():
+            #         logger.debug("发现现有事件循环，准备关闭")
+            #         # 不强制关闭，让它自然完成
+            # except RuntimeError:
+            #     # 没有现有循环，这是正常的
+            #     pass
 
-            # 创建新的qasync事件循环
-            loop = qasync.QEventLoop(app)
-            asyncio.set_event_loop(loop)
-            logger.info("已设置qasync事件循环")
+            # # 创建新的qasync事件循环
+            # loop = qasync.QEventLoop(app)
+            # asyncio.set_event_loop(loop)
+            # logger.info("已设置qasync事件循环")
 
-            # 在qasync环境中运行应用程序
-            with loop:
-                try:
-                    task = self._run_application_core(protocol, "gui")
-                    return loop.run_until_complete(task)
-                except RuntimeError as e:
-                    error_msg = "Event loop stopped before Future completed"
-                    if error_msg in str(e):
-                        # 正常退出情况，事件循环被QApplication.quit()停止
-                        logger.info("GUI应用程序正常退出")
-                        return 0
-                    else:
-                        # 其他运行时错误
-                        raise
+            # # 在qasync环境中运行应用程序
+            # with loop:
+            #     try:
+            #         task = self._run_application_core(protocol, "gui")
+            #         return loop.run_until_complete(task)
+            #     except RuntimeError as e:
+            #         error_msg = "Event loop stopped before Future completed"
+            #         if error_msg in str(e):
+            #             # 正常退出情况，事件循环被QApplication.quit()停止
+            #             logger.info("GUI应用程序正常退出")
+            #             return 0
+            #         else:
+            #             # 其他运行时错误
+            #             raise
 
-        except Exception as e:
-            logger.error(f"GUI应用程序异常退出: {e}", exc_info=True)
-            return 1
-        finally:
-            # 确保事件循环正确关闭
-            try:
-                if "loop" in locals():
-                    loop.close()
-            except Exception:
-                pass
+        # except Exception as e:
+        #     logger.error(f"GUI应用程序异常退出: {e}", exc_info=True)
+        #     return 1
+        # finally:
+        #     # 确保事件循环正确关闭
+        #     try:
+        #         if "loop" in locals():
+        #             loop.close()
+        #     except Exception:
+        #         pass
 
     async def _run_cli_mode(self, protocol: str):
         """
