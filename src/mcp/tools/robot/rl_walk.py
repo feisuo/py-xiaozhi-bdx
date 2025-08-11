@@ -49,7 +49,7 @@ class RLWalk:
     ):
         self._stop_event: Event = Event()
 
-        self.duck_config = DuckConfig(config_json_path=duck_config_path)
+        self.duck_config = DuckConfig(config_json_path=duck_config_path, ignore_default=True)
 
         if serial_port is None:
             serial_port = self.duck_config.serial_port

@@ -28,9 +28,9 @@ class ConfigManager:
             },
         },
         "WAKE_WORD_OPTIONS": {
-            "USE_WAKE_WORD": False,
+            "USE_WAKE_WORD": True,
             "MODEL_PATH": "models/vosk-model-small-cn-0.22",
-            "WAKE_WORDS": ["小智", "小美"],
+            "WAKE_WORDS": ["小智", "小绿"],
         },
         "CAMERA": {
             "camera_index": 0,
@@ -52,6 +52,19 @@ class ConfigManager:
                 "key": "w",
                 "description": "显示/隐藏窗口",
             },
+        },
+        "ROBOT": {
+            "RLWALK": {
+                "ENABLED": True,
+                "ONNX_MODEL_PATH": None,
+                "DUCK_CONFIG_PATH": None,
+                "CONTROL_FREQ": 50,
+                "ACTION_SCALE": 0.25,
+                "PID": {"P": 30, "I": 0, "D": 0},
+                "PITCH_BIAS": 0.0,
+                "COMMANDS": False,
+                "CUTOFF_FREQUENCY": None,
+            }
         },
     }
 

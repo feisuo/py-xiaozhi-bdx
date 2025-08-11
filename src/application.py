@@ -12,8 +12,10 @@ from src.protocols.mqtt_protocol import MqttProtocol
 from src.protocols.websocket_protocol import WebsocketProtocol
 from src.utils.common_utils import handle_verification_code
 from src.utils.config_manager import ConfigManager
+from src.utils.resource_finder import resource_finder
 from src.utils.logging_config import get_logger
 from src.utils.opus_loader import setup_opus
+from src.mcp.tools.robot.service import RLWalkService
 
 # 忽略SIGTRAP信号
 try:
@@ -299,10 +301,68 @@ class Application:
         # 启动倒计时器服务
         await self._start_timer_service()
 
+        # 启动机器人RLWalk（如配置启用）
+        await self._maybe_start_rlwalk()
+
         # 初始化快捷键管理器
         await self._initialize_shortcuts()
 
         logger.info("应用程序组件初始化完成")
+
+    async def _maybe_start_rlwalk(self):
+        """根据配置尝试启动RLWalk服务。"""
+        try:
+            cfg = self.config
+            enabled = cfg.get_config("ROBOT.RLWALK.ENABLED", False)
+            if not enabled:
+                return
+            onnx_model_path = cfg.get_config("ROBOT.RLWALK.ONNX_MODEL_PATH")
+            duck_config_path = cfg.get_config("ROBOT.RLWALK.DUCK_CONFIG_PATH")
+            control_freq = int(cfg.get_config("ROBOT.RLWALK.CONTROL_FREQ", 50))
+            action_scale = float(cfg.get_config("ROBOT.RLWALK.ACTION_SCALE", 0.25))
+            pid_p = int(cfg.get_config("ROBOT.RLWALK.PID.P", 30))
+            pid_i = int(cfg.get_config("ROBOT.RLWALK.PID.I", 0))
+            pid_d = int(cfg.get_config("ROBOT.RLWALK.PID.D", 0))
+            pitch_bias = float(cfg.get_config("ROBOT.RLWALK.PITCH_BIAS", 0.0))
+            commands = bool(cfg.get_config("ROBOT.RLWALK.COMMANDS", False))
+            cutoff_frequency = cfg.get_config("ROBOT.RLWALK.CUTOFF_FREQUENCY", None)
+
+            if not onnx_model_path:
+                # 在 models 目录寻找一个 .onnx 模型作为默认
+                try:
+                    candidates = resource_finder.list_files_in_directory("models", "*.onnx")
+                    if candidates:
+                        onnx_model_path = str(candidates[0])
+                        logger.info(f"未配置ONNX模型路径，使用发现的默认模型: {onnx_model_path}")
+                    else:
+                        logger.warning("RLWalk已启用，但未配置ONNX模型路径且未在models目录找到*.onnx，跳过启动")
+                        return
+                except Exception:
+                    logger.warning("RLWalk已启用，但自动查找ONNX模型失败，跳过启动")
+                    return
+
+            if not duck_config_path:
+                # 默认到用户home下duck_config.json
+                import os
+                duck_config_path = os.path.expanduser("~/duck_config.json")
+
+            msg = RLWalkService.get_instance().start(
+                onnx_model_path=onnx_model_path,
+                duck_config_path=duck_config_path,
+                control_freq=control_freq,
+                action_scale=action_scale,
+                pid_p=pid_p,
+                pid_i=pid_i,
+                pid_d=pid_d,
+                pitch_bias=pitch_bias,
+                commands=commands,
+                cutoff_frequency=(
+                    float(cutoff_frequency) if cutoff_frequency is not None else None
+                ),
+            )
+            logger.info(f"{msg}")
+        except Exception as e:
+            logger.error(f"自动启动RLWalk失败: {e}", exc_info=True)
 
     async def _initialize_audio(self):
         """
@@ -380,8 +440,9 @@ class Application:
         logger.debug("设置显示界面类型: %s", mode)
 
         if mode == "gui":
-            self.display = gui_display.GuiDisplay()
-            self._setup_gui_callbacks()
+            # self.display = gui_display.GuiDisplay()
+            # self._setup_gui_callbacks()
+            pass
         else:
             from src.display.cli_display import CliDisplay
 
@@ -1047,6 +1108,13 @@ class Application:
             self._shutdown_event.set()
 
         try:
+            # 停止RLWalk服务（如果在运行）
+            try:
+                msg = RLWalkService.get_instance().stop()
+                logger.info(msg)
+            except Exception:
+                pass
+
             # 2. 关闭唤醒词检测器
             await self._safe_close_resource(
                 self.wake_word_detector, "唤醒词检测器", "stop"
