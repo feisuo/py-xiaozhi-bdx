@@ -6,7 +6,7 @@ import threading
 from typing import Set
 
 from src.constants.constants import AbortReason, DeviceState, ListeningMode
-from src.display import gui_display
+# from src.display import gui_display
 from src.mcp.mcp_server import McpServer
 from src.protocols.mqtt_protocol import MqttProtocol
 from src.protocols.websocket_protocol import WebsocketProtocol
@@ -143,12 +143,12 @@ class Application:
         """
         在GUI模式下运行应用程序.
         """
-        try:
-            import qasync
-            from PyQt5.QtWidgets import QApplication
-        except ImportError:
-            logger.error("GUI模式需要qasync和PyQt5库，请安装: pip install qasync PyQt5")
-            return 1
+        # try:
+        #     import qasync
+        #     from PyQt5.QtWidgets import QApplication
+        # except ImportError:
+        #     logger.error("GUI模式需要qasync和PyQt5库，请安装: pip install qasync PyQt5")
+        #     return 1
 
         try:
             # 检查是否已存在QApplication实例
@@ -238,10 +238,11 @@ class Application:
             await self._start_core_tasks()
 
             # 启动显示界面
-            if mode == "gui":
-                await self._start_gui_display()
-            else:
-                await self._start_cli_display()
+            # if mode == "gui":
+            #     await self._start_gui_display()
+            # else:
+
+            await self._start_cli_display()
 
             logger.info("应用程序已启动，按Ctrl+C退出")
 
