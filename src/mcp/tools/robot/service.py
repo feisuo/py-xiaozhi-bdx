@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from threading import Thread
+import time
+from threading import Thread, Timer
 from typing import Optional
 
 from src.utils.logging_config import get_logger
@@ -19,6 +20,7 @@ class RLWalkService:
     def __init__(self) -> None:
         self._worker: Optional[Thread] = None
         self._rl: Optional[RLWalk] = None
+        self._stop_timer: Optional[Timer] = None
 
     @classmethod
     def get_instance(cls) -> "RLWalkService":
@@ -76,6 +78,28 @@ class RLWalkService:
         assert self._rl is not None
         self._rl.stop()
         return "RLWalk 停止中"
+    
+    def _cancel_stop_timer(self):
+        """取消定时停止计时器"""
+        if self._stop_timer and self._stop_timer.is_alive():
+            self._stop_timer.cancel()
+            self._stop_timer = None
+    
+    def _schedule_stop(self, duration: float):
+        """安排定时停止"""
+        self._cancel_stop_timer()
+        self._stop_timer = Timer(duration, self._auto_stop)
+        self._stop_timer.daemon = True
+        self._stop_timer.start()
+    
+    def _auto_stop(self):
+        """自动停止移动"""
+        if self.is_running() and self._rl is not None:
+            # 停止移动，但保持机器人运行
+            self._rl.last_commands[0] = 0.0  # lin_x
+            self._rl.last_commands[1] = 0.0  # lin_y
+            self._rl.last_commands[2] = 0.0  # yaw
+            logger.info("[RLWalkService] 移动指令执行完毕，已停止移动")
 
     def status(self) -> dict:
         return {
@@ -97,6 +121,7 @@ class RLWalkService:
         play_sound: bool = False,
         pause: bool = False,
         resume: bool = False,
+        auto_stop_duration: float = 0.0,
     ) -> str:
         rl = self._rl
         if not self.is_running() or rl is None:
@@ -134,6 +159,10 @@ class RLWalkService:
             rl.paused = True
         if resume:
             rl.paused = False
+
+        # 如果设置了自动停止时间，安排定时停止
+        if auto_stop_duration > 0:
+            self._schedule_stop(auto_stop_duration)
 
         return "RLWalk 控制指令已下发"
 

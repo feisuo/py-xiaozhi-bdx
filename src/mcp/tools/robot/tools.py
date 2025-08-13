@@ -61,7 +61,7 @@ def parse_and_print_robot_command(args: Dict[str, str]) -> str:
         action = "暂停"
     elif any(k in normalized for k in ["继续", "恢复", "开始"]):
         action = "继续"
-    elif any(k in normalized for k in ["停止运行", "停止行走", "停止程序", "结束运行", "关闭行走"]):
+    elif any(k in normalized for k in ["停止", "停止运行", "停止行走", "停止程序", "结束运行", "关闭行走"]):
         action = "停止运行"
 
     if action:
@@ -70,24 +70,27 @@ def parse_and_print_robot_command(args: Dict[str, str]) -> str:
         SPEED_Y = 0.12
         YAW_RATE = 0.35
         HEAD_YAW = 0.3
-        HEAD_PITCH = -0.2  # 负值更接近“点头”（向下）
+        HEAD_PITCH = -0.2  # 负值更接近"点头"（向下）
+        
+        # 移动指令的自动停止时间（4步约1.6秒）
+        MOVE_DURATION = 1.6
 
         service = RLWalkService.get_instance()
         control_result = ""
 
         try:
             if action == "向前走":
-                control_result = service.control(lin_x=SPEED_X, resume=True)
+                control_result = service.control(lin_x=SPEED_X, resume=True, auto_stop_duration=MOVE_DURATION)
             elif action == "向后走":
-                control_result = service.control(lin_x=-SPEED_X, resume=True)
+                control_result = service.control(lin_x=-SPEED_X, resume=True, auto_stop_duration=MOVE_DURATION)
             elif action == "左转":
-                control_result = service.control(yaw=YAW_RATE, resume=True)
+                control_result = service.control(yaw=YAW_RATE, resume=True, auto_stop_duration=MOVE_DURATION)
             elif action == "右转":
-                control_result = service.control(yaw=-YAW_RATE, resume=True)
+                control_result = service.control(yaw=-YAW_RATE, resume=True, auto_stop_duration=MOVE_DURATION)
             elif action == "左移":
-                control_result = service.control(lin_y=SPEED_Y, resume=True)
+                control_result = service.control(lin_y=SPEED_Y, resume=True, auto_stop_duration=MOVE_DURATION)
             elif action == "右移":
-                control_result = service.control(lin_y=-SPEED_Y, resume=True)
+                control_result = service.control(lin_y=-SPEED_Y, resume=True, auto_stop_duration=MOVE_DURATION)
             elif action == "打开投影灯":
                 control_result = service.control(projector_toggle=True)
             elif action == "关闭投影灯":
