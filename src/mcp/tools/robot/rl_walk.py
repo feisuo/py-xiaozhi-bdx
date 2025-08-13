@@ -122,8 +122,8 @@ class RLWalk:
         if self.duck_config.projector:
             self.projector = Projector()
         if self.duck_config.speaker:
-            src_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-            self.sounds = Sounds(volume=1.0, sound_directory=f"{src_root}/src/robot/mini_bdx_runtime/assets/")
+            src_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
+            self.sounds = Sounds(volume=1.0, sound_directory=f"{src_root}/robot/mini_bdx_runtime/assets/")
         if self.duck_config.antennas:
             self.antennas = Antennas()
 
