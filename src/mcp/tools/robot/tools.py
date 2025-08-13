@@ -79,6 +79,9 @@ def parse_and_print_robot_command(args: Dict[str, str]) -> str:
         control_result = ""
 
         try:
+            print(f"[Tools] 执行指令: {action}, 自动停止时间: {MOVE_DURATION}秒")
+            logger.info(f"[Tools] 执行指令: {action}, 自动停止时间: {MOVE_DURATION}秒")
+            
             if action == "向前走":
                 control_result = service.control(lin_x=SPEED_X, resume=True, auto_stop_duration=MOVE_DURATION)
             elif action == "向后走":

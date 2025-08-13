@@ -41,7 +41,7 @@ class RLWalkService:
         pid_i: int = 0,
         pid_d: int = 0,
         pitch_bias: float = 0.0,
-        commands: bool = False,
+        commands: bool = False,  # 确保默认为 False，避免 Xbox 控制器覆盖
         cutoff_frequency: float | None = None,
     ) -> str:
         if self.is_running():
@@ -91,15 +91,25 @@ class RLWalkService:
         self._stop_timer = Timer(duration, self._auto_stop)
         self._stop_timer.daemon = True
         self._stop_timer.start()
+        logger.info(f"[RLWalkService] 已安排 {duration} 秒后自动停止移动")
+        print(f"[RLWalkService] 已安排 {duration} 秒后自动停止移动")
     
     def _auto_stop(self):
         """自动停止移动"""
         if self.is_running() and self._rl is not None:
-            # 停止移动，但保持机器人运行
-            self._rl.last_commands[0] = 0.0  # lin_x
-            self._rl.last_commands[1] = 0.0  # lin_y
-            self._rl.last_commands[2] = 0.0  # yaw
-            logger.info("[RLWalkService] 移动指令执行完毕，已停止移动")
+            try:
+                # 停止移动，但保持机器人运行
+                self._rl.last_commands[0] = 0.0  # lin_x
+                self._rl.last_commands[1] = 0.0  # lin_y
+                self._rl.last_commands[2] = 0.0  # yaw
+                logger.info("[RLWalkService] 移动指令执行完毕，已停止移动")
+                print("[RLWalkService] 移动指令执行完毕，已停止移动")
+            except Exception as e:
+                logger.error(f"[RLWalkService] 自动停止失败: {e}", exc_info=True)
+                print(f"[RLWalkService] 自动停止失败: {e}")
+        else:
+            logger.warning("[RLWalkService] 自动停止时机器人未运行")
+            print("[RLWalkService] 自动停止时机器人未运行")
 
     def status(self) -> dict:
         return {
@@ -162,7 +172,12 @@ class RLWalkService:
 
         # 如果设置了自动停止时间，安排定时停止
         if auto_stop_duration > 0:
+            logger.info(f"[RLWalkService] 设置移动指令: lin_x={lin_x}, lin_y={lin_y}, yaw={yaw}, 自动停止时间={auto_stop_duration}秒")
+            print(f"[RLWalkService] 设置移动指令: lin_x={lin_x}, lin_y={lin_y}, yaw={yaw}, 自动停止时间={auto_stop_duration}秒")
             self._schedule_stop(auto_stop_duration)
+        else:
+            logger.info(f"[RLWalkService] 设置指令: lin_x={lin_x}, lin_y={lin_y}, yaw={yaw}")
+            print(f"[RLWalkService] 设置指令: lin_x={lin_x}, lin_y={lin_y}, yaw={yaw}")
 
         return "RLWalk 控制指令已下发"
 
