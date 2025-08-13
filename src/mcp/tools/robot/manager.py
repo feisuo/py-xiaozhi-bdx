@@ -38,7 +38,7 @@ class RobotToolsManager:
         add_tool(
             (
                 "self.robot.parse_command",
-                "识别并打印机器人动作指令。支持：向前走、向后走、左转、右转、左移、右移、打开投影灯、左右摇头、点头。",
+                "识别并打印机器人动作指令。支持：向前走、向后走、左转、右转、左移、右移、打开投影灯、关闭投影灯、左右摇头、点头、停止。",
                 props,
                 parse_and_print_robot_command,
             )
